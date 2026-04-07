@@ -1,0 +1,39 @@
+{
+  "name": "mcp-macos-cua",
+  "version": "1.0.0",
+  "description": "macOS Computer Use Agent - MCP server for GUI automation via screenshots, clicks, typing, accessibility, and AppleScript",
+  "type": "module",
+  "bin": {
+    "mcp-macos-cua": "./server/index.js"
+  },
+  "scripts": {
+    "start": "node server/index.js",
+    "setup": "bash setup.sh"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "zod": "^3.23.8"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "os": [
+    "darwin"
+  ],
+  "keywords": [
+    "mcp",
+    "macos",
+    "computer-use",
+    "gui-automation",
+    "cua",
+    "claude",
+    "applescript",
+    "accessibility"
+  ],
+  "author": "Asaf Atzmon",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bradthebeeble/mcp-macos-cua.git"
+  }
+}
