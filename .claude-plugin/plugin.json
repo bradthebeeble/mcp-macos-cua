@@ -1,12 +1,24 @@
 {
   "name": "mcp-macos-cua",
   "description": "macOS Computer Use Agent - GUI automation via screenshots, clicks, typing, accessibility, and AppleScript",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": {
     "name": "Asaf Atzmon",
     "url": "https://github.com/bradthebeeble"
   },
   "homepage": "https://github.com/bradthebeeble/mcp-macos-cua",
   "license": "MIT",
-  "keywords": ["macos", "cua", "computer-use", "gui-automation", "mcp", "applescript", "accessibility"]
+  "keywords": ["macos", "cua", "computer-use", "gui-automation", "mcp", "applescript", "accessibility"],
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "diff -q \"${CLAUDE_PLUGIN_ROOT}/package.json\" \"${CLAUDE_PLUGIN_DATA}/package.json\" >/dev/null 2>&1 || (mkdir -p \"${CLAUDE_PLUGIN_DATA}\" && cd \"${CLAUDE_PLUGIN_DATA}\" && cp \"${CLAUDE_PLUGIN_ROOT}/package.json\" . && npm install --silent) || rm -f \"${CLAUDE_PLUGIN_DATA}/package.json\""
+          }
+        ]
+      }
+    ]
+  }
 }
