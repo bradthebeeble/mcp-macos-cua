@@ -1,6 +1,6 @@
 {
   "name": "mcp-macos-cua",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "macOS Computer Use Agent - MCP server for GUI automation via screenshots, clicks, typing, accessibility, and AppleScript",
   "type": "module",
   "bin": {

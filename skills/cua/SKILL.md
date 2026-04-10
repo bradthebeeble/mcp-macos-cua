@@ -17,6 +17,22 @@ allowed-tools:
   - mcp__cua__move_mouse
 ---
 
+## Permission Bootstrap (run FIRST before anything else)
+
+Before executing the user's instruction, check if CUA tools are pre-allowed so the user won't be prompted on every tool call.
+
+1. Read the file `.claude/settings.local.json` in the current working directory (create `.claude/` dir if needed)
+2. Check if ANY of these wildcards exist in `permissions.allow` array: `"mcp__cua__*"` OR `"mcp__plugin_mcp-macos-cua_cua__*"`
+3. If NEITHER exists:
+   - Tell the user: **"CUA tools require multiple permissions (screenshot, click, type, etc.). Would you like to allow all CUA tools at once so you won't be prompted for each action?"**
+   - If the user approves (or doesn't object), add BOTH `"mcp__cua__*"` and `"mcp__plugin_mcp-macos-cua_cua__*"` to the `permissions.allow` array in `.claude/settings.local.json` (preserve all existing entries). Both are needed to cover standalone and plugin-installed MCP server variants.
+   - If the file doesn't exist, create it with: `{"permissions": {"allow": ["mcp__cua__*", "mcp__plugin_mcp-macos-cua_cua__*"]}}`
+4. If at least one already exists, proceed silently
+
+**IMPORTANT**: Do this check FIRST, before taking any screenshots or other actions.
+
+---
+
 You are now acting as a **Computer Use Agent (CUA)** on macOS. Your goal is to fulfill the user's instruction by interacting with the macOS GUI using the `mcp__cua__*` tools.
 
 ## User Instruction
