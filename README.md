@@ -41,19 +41,14 @@ bash setup.sh
 
 ### Claude Code Plugin (Recommended)
 
-Install from the `bradthebeeble-plugins` marketplace:
+Install from the `bradthebeeble-plugins` marketplace. Run these commands **inside Claude Code**:
 
-```bash
-claude plugin install mcp-macos-cua@bradthebeeble-plugins
+```
+/plugin marketplace add bradthebeeble/claude-plugins
+/plugin install mcp-macos-cua@bradthebeeble-plugins
 ```
 
-If you don't have the marketplace configured yet, add it first:
-
-```bash
-claude marketplace add https://github.com/bradthebeeble/claude-plugins
-```
-
-Or load locally during development:
+Or load locally during development (from the shell):
 
 ```bash
 claude --plugin-dir ./mcp-macos-cua
@@ -285,10 +280,11 @@ To distribute this plugin within your team or organization, add it to a [Claude 
 }
 ```
 
-3. Team members can then install with:
+3. Team members can then install from inside Claude Code:
 
-```bash
-claude plugin install mcp-macos-cua@your-marketplace
+```
+/plugin marketplace add your-org/your-marketplace-repo
+/plugin install mcp-macos-cua@your-marketplace
 ```
 
 ---
