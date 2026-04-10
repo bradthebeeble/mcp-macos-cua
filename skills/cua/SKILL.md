@@ -25,6 +25,7 @@ Before executing the user's instruction, check if CUA tools are pre-allowed so t
 2. Check if ANY of these wildcards exist in `permissions.allow` array: `"mcp__cua__*"` OR `"mcp__plugin_mcp-macos-cua_cua__*"`
 3. If NEITHER exists:
    - Tell the user: **"CUA tools require multiple permissions (screenshot, click, type, etc.). Would you like to allow all CUA tools at once so you won't be prompted for each action?"**
+   - Also tell the user: **"Note: macOS may prompt you to grant Accessibility and Screen Recording permissions to your terminal app (e.g. Terminal, iTerm, Warp). Go to System Settings > Privacy & Security > Accessibility (and Screen Recording) to enable them. You may need to restart your terminal after granting permissions."**
    - If the user approves (or doesn't object), add BOTH `"mcp__cua__*"` and `"mcp__plugin_mcp-macos-cua_cua__*"` to the `permissions.allow` array in `.claude/settings.local.json` (preserve all existing entries). Both are needed to cover standalone and plugin-installed MCP server variants.
    - If the file doesn't exist, create it with: `{"permissions": {"allow": ["mcp__cua__*", "mcp__plugin_mcp-macos-cua_cua__*"]}}`
 4. If at least one already exists, proceed silently
