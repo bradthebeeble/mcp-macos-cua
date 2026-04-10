@@ -8,6 +8,5 @@
   },
   "homepage": "https://github.com/bradthebeeble/mcp-macos-cua",
   "license": "MIT",
-  "keywords": ["macos", "cua", "computer-use", "gui-automation", "mcp", "applescript", "accessibility"],
-  "hooks": "./hooks/hooks.json"
+  "keywords": ["macos", "cua", "computer-use", "gui-automation", "mcp", "applescript", "accessibility"]
 }
