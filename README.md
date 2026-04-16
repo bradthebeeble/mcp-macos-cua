@@ -4,7 +4,7 @@ A macOS **Computer Use Agent** (CUA) — an MCP server that gives AI agents full
 
 Control any desktop app through screenshots, mouse clicks, keyboard input, accessibility queries, and AppleScript.
 
-> **Optimized for Claude Code** — includes a ready-to-use `/cua` skill with automatic permission bootstrap. Works as a standalone MCP server with any MCP-compatible agent.
+> **Optimized for Claude Code** — includes a ready-to-use `/cua` skill with automatic permission bootstrap. Also works as a standalone MCP server with any MCP-compatible agent.
 
 ## Features
 
@@ -28,43 +28,45 @@ Control any desktop app through screenshots, mouse clicks, keyboard input, acces
 - **Node.js 18+**
 - **cliclick** — `brew install cliclick`
 - **Accessibility permissions** — System Settings > Privacy & Security > Accessibility (grant to your terminal app)
+- **Screen Recording permissions** — System Settings > Privacy & Security > Screen Recording (grant to your terminal app)
 - **Python 3** with pyobjc-framework-Quartz — usually pre-installed on macOS; if not: `pip3 install pyobjc-framework-Quartz`
 
-Run the setup checker to verify everything:
-```bash
-bash setup.sh
-```
+You may need to restart your terminal after granting macOS permissions.
 
 ---
 
 ## Installation
 
-### Claude Code Plugin (Recommended)
+### Option A: Claude Code Plugin (Recommended)
 
-Install from the `bradthebeeble-plugins` marketplace. Run these commands **inside Claude Code**:
+The plugin gives you the full experience: an MCP server, a `/cua` skill with guided CUA loop, and automatic permission bootstrap.
+
+**From the marketplace** — run these commands inside Claude Code:
 
 ```
 /plugin marketplace add bradthebeeble/claude-plugins
 /plugin install mcp-macos-cua@bradthebeeble-plugins
 ```
 
-Or load locally during development (from the shell):
+**From local source** — for development/testing (from the shell):
 
 ```bash
-claude --plugin-dir ./mcp-macos-cua
+claude --plugin-dir /path/to/mcp-macos-cua
 ```
 
-This registers both the MCP server **and** the `/cua` skill in one step. Start using it immediately:
+After installing, start using it immediately:
 
 ```
 /mcp-macos-cua:cua open Safari and search for today's weather
 ```
 
-**Auto-permissions:** On first use, the `/cua` skill detects whether CUA tool permissions are configured. If not, it asks once to allow all CUA tools — no more per-tool prompts.
+**Auto-permissions:** On first use, the `/cua` skill detects whether CUA tool permissions are configured. If not, it asks once to allow all CUA tools — no more per-tool prompts for the rest of the project.
 
-### Claude Code (Manual MCP Only)
+### Option B: Any MCP-Compatible Agent (npx)
 
-If you only want the MCP server without the plugin skill, add to your project's `.mcp.json`:
+The MCP server is published on npm and works with **any** agent that supports the [Model Context Protocol](https://modelcontextprotocol.io) — no plugin system required.
+
+Add this to your MCP client config:
 
 ```json
 {
@@ -77,37 +79,24 @@ If you only want the MCP server without the plugin skill, add to your project's 
 }
 ```
 
-> **Note:** This gives you the raw MCP tools but **not** the `/cua` skill, the CUA loop prompt, or the auto-permission bootstrap. You'll need to prompt the agent yourself (see [System Prompt for Other Agents](#system-prompt-for-other-agents) below).
+`npx` downloads the package and all dependencies automatically on first run, and caches them for subsequent calls.
 
-To avoid per-tool permission prompts, add this to `.claude/settings.local.json`:
+**Where to put this config:**
 
-```json
-{
-  "permissions": {
-    "allow": ["mcp__cua__*"]
-  }
-}
-```
+| Agent | Config location |
+|-------|----------------|
+| **Claude Code** | `.mcp.json` in your project root |
+| **Cursor** | Settings > MCP > Add server |
+| **Windsurf** | MCP settings |
+| **Claude Desktop** | `claude_desktop_config.json` |
+| **Custom** | Your MCP client config file |
 
-### Other AI Agents (DIY)
+> **Note for Claude Code users:** Using the MCP server directly (without the plugin) gives you the raw tools but **not** the `/cua` skill, the guided CUA loop, or the auto-permission bootstrap. To avoid per-tool permission prompts, add `"mcp__cua__*"` to `permissions.allow` in `.claude/settings.local.json`.
 
-The MCP server works with any agent that supports the [Model Context Protocol](https://modelcontextprotocol.io). Here's how to set it up outside Claude Code.
+### Option C: Clone and Run
 
-#### Step 1: Install the MCP server
+For development or when you want to run the server directly:
 
-**Option A — npx (no install needed):**
-```json
-{
-  "mcpServers": {
-    "cua": {
-      "command": "npx",
-      "args": ["-y", "mcp-macos-cua"]
-    }
-  }
-}
-```
-
-**Option B — Clone and run:**
 ```bash
 git clone https://github.com/bradthebeeble/mcp-macos-cua.git
 cd mcp-macos-cua
@@ -115,19 +104,13 @@ npm install
 node server/index.js
 ```
 
-#### Step 2: Configure your agent's MCP client
+The server communicates via stdio — connect your MCP client to the process.
 
-Add the server to your agent's MCP configuration. The exact format depends on your agent:
+---
 
-| Agent | Config location |
-|-------|----------------|
-| **Cursor** | Settings > MCP > Add server |
-| **Windsurf** | `.windsurfrules` or MCP settings |
-| **Custom** | Your MCP client config file |
+## System Prompt for Non-Plugin Usage
 
-#### Step 3: Add a system prompt
-
-The MCP server provides the tools, but the agent needs instructions on **how** to use them effectively. Add the following to your agent's system prompt or instructions:
+When using the MCP server without the Claude Code plugin (Options B or C), your agent needs instructions on how to use the tools effectively. Add this to your agent's system prompt:
 
 <details>
 <summary>CUA System Prompt (click to expand)</summary>
@@ -138,16 +121,31 @@ You are a Computer Use Agent (CUA) on macOS. Interact with the GUI using the cua
 ## CUA Loop
 1. Screenshot - Take a screenshot to see current state
 2. Analyze - Determine what action to take next
-3. Act - Use the appropriate tool
+3. Act - Use the appropriate tool (click, type_text, key_press, etc.)
 4. Verify - Screenshot again to confirm it worked
 5. Repeat or Report - Continue or summarize results
 
 ## Coordinate System
 The screenshot tool returns a display scale factor (e.g. 2x for Retina, 1x for standard).
 Divide screenshot pixel positions by this scale factor to get correct tool coordinates.
+Example: if scale factor is 2x and you see a button at pixel (800, 400) in the screenshot,
+click at coordinates (400, 200).
+
+## Available Tools
+- screenshot - Capture screen (optionally a specific app)
+- open_app - Open and activate an application
+- click - Click at coordinates (x, y in screen points)
+- type_text - Type text into frontmost app
+- key_press - Press keys/combos (e.g. "cmd+c", "return", "cmd+shift+a")
+- scroll - Scroll in a direction at a position
+- get_ui_elements - Inspect accessibility tree of an app
+- click_ui_element - Click an element by name via accessibility
+- run_applescript - Execute arbitrary AppleScript
+- get_mouse_position - Get current cursor position
+- move_mouse - Move cursor to coordinates
 
 ## Tips
-- Always start with a screenshot
+- Always start with a screenshot before acting
 - Prefer click_ui_element (accessibility) over coordinate click when possible
 - Use get_ui_elements to discover clickable elements by name
 - Use key_press for keyboard shortcuts (faster than navigating menus)
@@ -157,19 +155,13 @@ Divide screenshot pixel positions by this scale factor to get correct tool coord
 
 </details>
 
-#### Step 4: Handle permissions
-
-Each agent handles tool permissions differently:
-- **Cursor/Windsurf**: Tools are auto-approved once the MCP server is added
-- **Custom agents**: Ensure your MCP client allows tool calls without blocking
-
 ---
 
 ## Usage
 
 ### The CUA Loop
 
-The `/cua` skill (Claude Code) or the system prompt (other agents) follows a **Screenshot > Analyze > Act > Verify > Repeat** loop:
+Whether via the `/cua` skill or a custom system prompt, the agent follows a **Screenshot > Analyze > Act > Verify > Repeat** loop:
 
 1. Takes a screenshot to see the current screen state
 2. Analyzes what action to take next
@@ -181,7 +173,7 @@ The `/cua` skill (Claude Code) or the system prompt (other agents) follows a **S
 
 The `screenshot` tool automatically detects the display scale factor (2x for Retina, 1x for standard displays) and returns it with every screenshot. **Divide screenshot pixel positions by this factor** to get correct tool coordinates.
 
-### Examples
+### Examples (Claude Code plugin)
 
 ```
 /mcp-macos-cua:cua open Slack and send "hello" to the #general channel
@@ -263,7 +255,7 @@ No parameters. Returns current cursor position.
 
 ## Adding to a Team Marketplace
 
-To distribute this plugin within your team or organization, add it to a [Claude Code plugin marketplace](https://code.claude.com/docs/en/plugin-marketplaces):
+To distribute the Claude Code plugin within your team, add it to a [Claude Code plugin marketplace](https://code.claude.com/docs/en/plugin-marketplaces):
 
 1. Create or locate your team's `marketplace.json`
 2. Add the plugin entry:
@@ -295,11 +287,13 @@ To distribute this plugin within your team or organization, add it to a [Claude 
 
 **Clicks land in wrong position** — Check the scale factor returned by `screenshot`. Divide pixel coordinates by that factor.
 
-**"not allowed assistive access"** — Grant Accessibility permissions in System Settings > Privacy & Security > Accessibility to your terminal app.
+**"not allowed assistive access"** — Grant Accessibility permissions in System Settings > Privacy & Security > Accessibility to your terminal app. Restart the terminal after granting.
 
 **Scroll not working** — Install pyobjc: `pip3 install pyobjc-framework-Quartz`
 
-**Permission prompts on every CUA tool call (Claude Code)** — The auto-permission bootstrap only runs via the `/cua` skill. If using manual MCP config, add `"mcp__cua__*"` to `permissions.allow` in `.claude/settings.local.json`.
+**Permission prompts on every CUA tool call (Claude Code)** — The auto-permission bootstrap only runs via the `/cua` skill (plugin install). If using manual MCP config, add `"mcp__cua__*"` to `permissions.allow` in `.claude/settings.local.json`.
+
+**MCP server not starting** — Verify `npx -y mcp-macos-cua` runs from your terminal. Check that Node.js 18+ is installed.
 
 ---
 
