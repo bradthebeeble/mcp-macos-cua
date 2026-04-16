@@ -1,7 +1,8 @@
 {
   "mcpServers": {
     "cua": {
-      "command": "${CLAUDE_PLUGIN_ROOT}/bin/mcp-cua"
+      "command": "npx",
+      "args": ["-y", "mcp-macos-cua"]
     }
   }
 }

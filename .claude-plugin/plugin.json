@@ -1,7 +1,7 @@
 {
   "name": "mcp-macos-cua",
   "description": "macOS Computer Use Agent - GUI automation via screenshots, clicks, typing, accessibility, and AppleScript",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "author": {
     "name": "Asaf Atzmon",
     "url": "https://github.com/bradthebeeble"
