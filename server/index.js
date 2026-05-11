@@ -16,6 +16,17 @@ function run(cmd, timeout = 10000) {
   return execSync(cmd, { encoding: "utf-8", timeout }).trim();
 }
 
+// Escape a string for use as a literal inside an AppleScript string
+// that is itself wrapped in shell single quotes via `osascript -e '...'`.
+// Escapes (in order): AppleScript backslash, AppleScript double-quote,
+// then POSIX shell single-quote (close-quote, escaped quote, reopen).
+function asArg(s) {
+  return String(s)
+    .replace(/\\/g, "\\\\")
+    .replace(/"/g, '\\"')
+    .replace(/'/g, "'\\''");
+}
+
 function getDisplayScaleFactor() {
   try {
     const pyScript = `
@@ -82,9 +93,9 @@ server.tool(
   { app: z.string().describe("Application name (e.g. 'Slack', 'WhatsApp', 'Safari')") },
   async ({ app }) => {
     try {
-      run(`osascript -e 'tell application "${app}" to activate'`);
+      run(`osascript -e 'tell application "${asArg(app)}" to activate'`);
       run(`sleep 1`);
-      run(`osascript -e 'tell application "System Events" to tell process "${app}" to set frontmost to true'`);
+      run(`osascript -e 'tell application "System Events" to tell process "${asArg(app)}" to set frontmost to true'`);
       return { content: [{ type: "text", text: `Opened and activated ${app}` }] };
     } catch (e) {
       return { content: [{ type: "text", text: `Failed to open ${app}: ${e.message}` }] };
@@ -123,7 +134,7 @@ server.tool(
   { text: z.string().describe("Text to type") },
   async ({ text }) => {
     try {
-      run(`osascript -e 'tell application "System Events" to keystroke "${text.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"'`);
+      run(`osascript -e 'tell application "System Events" to keystroke "${asArg(text)}"'`);
       return { content: [{ type: "text", text: `Typed: ${text}` }] };
     } catch (e) {
       return { content: [{ type: "text", text: `Type failed: ${e.message}` }] };
@@ -222,8 +233,8 @@ server.tool(
   async ({ app, depth }) => {
     try {
       const script = depth === "deep"
-        ? `tell application "System Events" to tell process "${app}" to get entire contents of window 1`
-        : `tell application "System Events" to tell process "${app}" to get {role, name, description} of every UI element of window 1`;
+        ? `tell application "System Events" to tell process "${asArg(app)}" to get entire contents of window 1`
+        : `tell application "System Events" to tell process "${asArg(app)}" to get {role, name, description} of every UI element of window 1`;
       const result = run(`osascript -e '${script}'`, 15000);
       return { content: [{ type: "text", text: result }] };
     } catch (e) {
@@ -246,7 +257,7 @@ server.tool(
   async ({ app, element_type, name, path }) => {
     const parent = path || "window 1";
     try {
-      const script = `tell application "System Events" to tell process "${app}" to click ${element_type} "${name}" of ${parent}`;
+      const script = `tell application "System Events" to tell process "${asArg(app)}" to click ${element_type} "${asArg(name)}" of ${parent}`;
       const result = run(`osascript -e '${script}'`, 10000);
       return { content: [{ type: "text", text: `Clicked ${element_type} "${name}": ${result}` }] };
     } catch (e) {
